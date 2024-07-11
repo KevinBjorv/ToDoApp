@@ -11,9 +11,6 @@ EntryManagement::EntryManagement(Entry entry) : entry(entry) {
 	
 }
 
-EntryManagement::~EntryManagement() {
-}
-
 bool EntryManagement::addEntry() {
 	Dashboard dashboard;
 	bool failure = false;
@@ -124,6 +121,60 @@ bool EntryManagement::removeEntry() {
 		return false;
 	}
 
+	return saveEntriesToFile();
+}
+
+bool EntryManagement::editEntryDetails(const std::string& detailName) {
+	if (!loadExistingEntries()) {
+		std::cerr << "Failed to load existing entries for editing.\n";
+		return false;
+	}
+
+	// Locate the entry to edit
+	auto it = std::find_if(entries.begin(), entries.end(), [this](const json& entryJson) {
+		return entryJson.at("name").get<std::string>() == entry.name;
+		});
+
+	if (it == entries.end()) {
+		std::cerr << "Entry not found for editing.\n";
+		return false;
+	}
+
+	// Edit the specific detail
+	if (detailName == "name") {
+		std::string newName;
+		std::cout << "Enter new name: ";
+		std::getline(std::cin, newName);
+		it->at("name") = newName;
+		entry.name = newName; // Update the current entry object as well
+	}
+	else if (detailName == "doDate") {
+		std::string newDoDate;
+		std::cout << "Enter new do-date: ";
+		std::cin >> newDoDate;
+		it->at("doDate") = newDoDate;
+		entry.doDate = newDoDate; // Update the current entry object as well
+	}
+	else if (detailName == "priority") {
+		std::string newPriority;
+		std::cout << "Do you want to set this task as priority? (true/false): ";
+		std::cin >> newPriority;
+		it->at("isPriority") = newPriority;
+		entry.priority = (newPriority == "true"); // Update the current entry object as well
+	}
+	else if (detailName == "done") {
+		bool newDone;
+		std::cout << "Enter new done status (0/1): ";
+		std::cin >> newDone;
+		it->at("isDone") = newDone;
+		entry.done = newDone; // Update the current entry object as well
+	}
+	else {
+		std::cerr << "Invalid detail name.\n";
+		return false;
+	}
+
+	// Save the updated entries to the file
 	return saveEntriesToFile();
 }
 

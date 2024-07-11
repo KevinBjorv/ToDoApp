@@ -2,8 +2,9 @@
 #include "MenuManager.h"
 
 int main() {
-	std::unique_ptr<Dashboard> dashboard = std::make_unique<Dashboard>();
-	dashboard->start();
-
+    auto dashboard = std::make_shared<Dashboard>();
+    auto actionMenu = std::make_shared<ActionMenu>(dashboard);
+    dashboard->setActionMenu(actionMenu);
+    dashboard->start();
 	return 0;
 }

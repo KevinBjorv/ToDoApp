@@ -3,73 +3,93 @@
 #include <functional>
 #include <map>
 #include <sstream>
+#include <memory>
+#include <optional>
 #include "Entry.h"
 
 class ActionMenu;
-class Entry;
 
 class Dashboard {
 public:
-	explicit Dashboard() = default;
-	virtual ~Dashboard() = default;
+    explicit Dashboard();
+    virtual ~Dashboard() = default;
 
-	void start(const bool clearScreen = true);
+    void start(const bool clearScreen = true);
+    std::unordered_map<Entry, int> entryNumLink; // Links the number that's displayed before the entry name on the dashboard
+    std::vector<Entry> currentEntries;
+    void setActionMenu(std::shared_ptr<ActionMenu> actionMenu);
 
-	std::unordered_map<Entry, int> entryNumLink; // Links the number that's displayed before the entry name on the dashboard
-private: 
-	struct MenuOptions { 
-		std::vector<std::pair<std::string, char>> option; // Name & Prefix
+private:
+    struct MenuOptions {
+        std::vector<std::pair<std::string, char>> option; // Name & Prefix
 
-		MenuOptions(){
-			option.push_back({ "Add entry", 'a' });
-			option.push_back({ "Edit entry", 'b' });
-			option.push_back({ "Remove entry", 'c' });
-			option.push_back({ "Settings", 'd' });
-			option.push_back({ "Exit", 'e' });
-		}
-	};
+        MenuOptions() {
+            option.push_back({ "Add entry", 'a' });
+            option.push_back({ "Edit entry", 'b' });
+            option.push_back({ "Remove entry", 'c' });
+            option.push_back({ "Settings", 'd' });
+            option.push_back({ "Exit", 'e' });
+        }
+    };
 
-	virtual void displayTasks();
-	virtual void displayOptions();
-	virtual void handleChoice(std::string& choice);
+    virtual void displayTasks();
+    virtual void displayOptions();
 
-	virtual void removeEntry();
 
-	std::unique_ptr<ActionMenu> actionMenu = std::make_unique<ActionMenu>();
-	MenuOptions menuOption;
+    // Dashboard choice handling
+
+    virtual void handleChoice(std::string& choice);
+    bool handleBasicCommand(const std::string& choice);
+    bool handleAdvancedCommand(std::string& choice);
+    std::optional<std::pair<int, char>> validateAdvancedCommand(std::string& command);
+
+    void openSettingsMenu();
+    void displayHelp();
+
+
+    void addEntryMenu();
+    virtual void removeEntryMenu();
+    virtual void editEntryMenu();
+    void editEntryFromCommand(Entry* selectedEntry);
+
+    std::shared_ptr<ActionMenu> actionMenu;
+    MenuOptions menuOption;
 };
 
 class ActionMenu {
-public: 
-	ActionMenu() = default;
-	~ActionMenu() = default;
+public:
+    ActionMenu(std::shared_ptr<Dashboard> dashboard);
+    ~ActionMenu() = default;
 
-	virtual void addEntry();
-	virtual void editEntry();
+    // Implementations of entry management methods
+    void addEntry(std::string& nameInput, std::string& doDateInput, std::string& priorityInput);
+    void removeEntry(std::string& choice);
 
-	virtual void displayHelp();
+    // Edit entry
+    Entry* getSelectedEntryForEdit(std::string& entryChoice);
+    virtual bool handleEditEntryChoice(std::string& taskChoice, Entry& selectedEntry);
 
-private: 
-	enum EntryValidationResult {
-		success = 0,
-		successAndPriorityIsTrue = 1,
-		// Name
-		tooShort = 2,
-		tooLong = 3,
 
-		// Date
-		wrongFormat = 4,
+private:
+    enum EntryValidationResult {
+        success = 0,
+        successAndPriorityIsTrue = 1,
+        // Name
+        tooShort = 2,
+        tooLong = 3,
 
-		// Priority
-		invalidInput = 5
-	};
+        // Date
+        wrongFormat = 4,
 
-	struct EntryValidation {
-		EntryValidationResult name(const std::string& name);
-		EntryValidationResult date(const std::string& doDate);
-		EntryValidationResult priority(std::string& priorityInput);
-	};
+        // Priority
+        invalidInput = 5
+    };
+
+    struct EntryValidation {
+        EntryValidationResult name(const std::string& name);
+        EntryValidationResult date(const std::string& doDate);
+        EntryValidationResult priority(std::string& priorityInput);
+    };
+
+    std::shared_ptr<Dashboard> dashboard;
 };
-
-
-

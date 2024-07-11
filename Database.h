@@ -8,7 +8,7 @@ using json = nlohmann::json;
 class EntryManagement {
 public:
 	EntryManagement(Entry entry);
-	~EntryManagement();
+	~EntryManagement() = default;
 
 	std::string entriesFilePath = utility::console::getEntryFilePath();
 
@@ -19,7 +19,7 @@ public:
 	void createNewEntry();
 	bool saveEntriesToFile();
 
-	bool editEntryDetails();
+	bool editEntryDetails(const std::string& detailName);
 	bool removeEntry();
 
 private:

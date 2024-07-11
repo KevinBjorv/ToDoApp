@@ -80,6 +80,14 @@ namespace utility {
 			return !str.empty() && std::all_of(str.begin(), str.end(), ::isdigit);
 		}
 
+		inline bool containsNumber(const std::string& str) {
+			for (char c : str) {
+				if (std::isdigit(c)) {
+					return true;
+				}
+			}
+			return false;
+		}
 		inline int convertStringToNum(const std::string& str) {
 			try {
 				int i = std::stoi(str);
