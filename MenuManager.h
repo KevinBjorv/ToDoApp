@@ -24,9 +24,9 @@ private:
         std::vector<std::pair<std::string, char>> option; // Name & Prefix
 
         MenuOptions() {
-            option.push_back({ "Add entry", 'a' });
-            option.push_back({ "Edit entry", 'b' });
-            option.push_back({ "Remove entry", 'c' });
+            option.push_back({ "Add Task", 'a' });
+            option.push_back({ "Edit Task", 'b' });
+            option.push_back({ "Remove Task", 'c' });
             option.push_back({ "Settings", 'd' });
             option.push_back({ "Exit", 'e' });
         }

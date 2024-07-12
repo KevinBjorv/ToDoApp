@@ -17,7 +17,7 @@ public:
 	// Derived methods
 	bool loadExistingEntries();
 	void createNewEntry();
-	bool saveEntriesToFile();
+	bool saveEntriesToFile() const;
 
 	bool editEntryDetails(const std::string& detailName);
 	bool removeEntry();

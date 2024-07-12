@@ -77,7 +77,7 @@ void EntryManagement::createNewEntry() {
 	entries.push_back(newEntry); // Append new entry
 }
 
-bool EntryManagement::saveEntriesToFile() {
+bool EntryManagement::saveEntriesToFile() const {
 	std::ofstream entryFileOut(entriesFilePath, std::ios::trunc); // Open in truncation mode
 	if (!entryFileOut.is_open()) {
 		std::cerr << "Failed to open file for writing: " << entriesFilePath << std::endl;

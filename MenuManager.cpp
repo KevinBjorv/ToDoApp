@@ -2,6 +2,7 @@
 #include "Database.h"
 #include "UtilityFunctions.h"
 #include "Entry.h"
+#include "Colors.h"
 #include <iostream>
 #include <cctype>
 #include <vector>
@@ -30,7 +31,7 @@ void Dashboard::start(const bool clearScreen) {
 
 #pragma region Dashboard
 void Dashboard::displayOptions() {
-    std::cout << "Welcome to the To-Do list Dashboard\n";
+    std::cout << color::bold_blue << "Welcome to the To-Do list Dashboard\n" << color::reset;
     displayTasks();
     std::cout << "\nOptions\n";
 
@@ -40,7 +41,7 @@ void Dashboard::displayOptions() {
     }
 
     std::string choice;
-    std::cout << "Enter choice: ";
+    std::cout << color::underline_white << "Enter choice" << color::white << ": " << color::reset;
     std::getline(std::cin, choice);
     handleChoice(choice);
 }
@@ -63,7 +64,7 @@ void Dashboard::handleChoice(std::string& choice) {
     
     if (!success) {
         utility::console::clearInputBuffer();
-        std::cout << "Invalid choice. Please type \"help\" for help (Press any key to continue)\n";
+        std::cout << color::red << "Invalid choice. Please type" << color::reset << "\"help\"" << color::red <<"for help (Press any key to continue)\n" << color::reset;
     }
     else {
         start(); // If success and the function opened by the handleCommand function returned
@@ -96,12 +97,12 @@ bool Dashboard::handleBasicCommand(const std::string& choice) {
                 return true;
             }
             else if (pair.second == 'e') {
-                std::cout << "Exiting...";
+                std::cout << color::red << "Exiting..." << color::reset;
                 exit(1);
             }
-            return false;
         }
     }
+    return false;
 }
 
 bool Dashboard::handleAdvancedCommand(std::string& choice) {
@@ -125,7 +126,7 @@ bool Dashboard::handleAdvancedCommand(std::string& choice) {
             return true;
         }
         else {
-            std::cout << "Entry with prefix " << prefixNumber << " not found." << std::endl;
+            std::cout << color::red << "Entry with prefix " << color::underline_white << prefixNumber << color::red << " not found." << std::endl; 
             return false;
         }
     }
@@ -168,12 +169,40 @@ std::optional<std::pair<int, char>> Dashboard::validateAdvancedCommand(std::stri
 }
 
 void Dashboard::displayTasks() {
+    auto dateToAbbreviation = [](const std::string& date) -> std::string {
+        if (date.length() != 4) {
+            return "Invalid date format";
+        }
+
+        std::unordered_map<std::string, std::string> monthMap = {
+            {"01", "Jan"}, {"02", "Feb"}, {"03", "Mar"}, {"04", "Apr"},
+            {"05", "May"}, {"06", "Jun"}, {"07", "Jul"}, {"08", "Aug"},
+            {"09", "Sep"}, {"10", "Oct"}, {"11", "Nov"}, {"12", "Dec"}
+        };
+
+        std::string month = date.substr(0, 2);
+        std::string day = date.substr(2, 2);
+
+        if (monthMap.find(month) == monthMap.end()) {
+            return "Invalid month";
+        }
+
+        return monthMap[month] + " " + day;
+        };
+
     entryNumLink.clear(); // Clear existing mappings
     std::vector<Entry> entries = Database::loadEntries(); // Load entries from the database
-
+    
     for (size_t i = 1; i < entries.size(); ++i) { // Start from 1 to skip the empty element
-        std::cout << i << ". " << entries[i].name << " (" << entries[i].doDate << ")\n";
+        if (entries[i].priority) {
+            std::cout << color::yellow;
+        }
+        else {
+            std::cout << color::white;
+        }
+        std::cout << i << ". " << entries[i].name << " (" << dateToAbbreviation(entries[i].doDate) << ")\n";
         entryNumLink[entries[i]] = static_cast<int>(i); // Map the entry to its index
+        std::cout << color::reset;
     }
 }
 #pragma endregion
@@ -182,7 +211,7 @@ void Dashboard::openSettingsMenu() {
     // Temporary method implementation
     std::string line;
     std::cout << "1. Help\n";
-    std::cout << "Enter choice: ";
+    std::cout << color::underline_white << "Enter choice" << color::white << ": " << color::reset;
     std::getline(std::cin, line);
     utility::string::convertToLowercase(line);
 
@@ -227,7 +256,7 @@ void Dashboard::editEntryMenu() {
     utility::console::setTitle("Edit Task");
 
     std::string entryChoice;
-    std::cout << "Enter the name or prefix of the task you want to edit: ";
+    std::cout << color::underline_white << "Enter the name or prefix of the task you want to edit" << color::reset << ": ";
     std::getline(std::cin, entryChoice);
     Entry* selectedEntry = actionMenu->getSelectedEntryForEdit(entryChoice);
     if (selectedEntry == nullptr) {
@@ -243,15 +272,15 @@ void Dashboard::editEntryMenu() {
     std::cout << "Is done: " << selectedEntry->done << "\n";
 
     std::string detailChoice;
-    std::cout << "Enter the name of the detail you want to edit: ";
+    std::cout << color::underline_white << "Enter the name of the detail you want to edit" << color::reset << ": ";
     std::getline(std::cin, detailChoice);
 
     if (!actionMenu->handleEditEntryChoice(detailChoice, *selectedEntry)) {
-        std::cout << "Please try again" << std::endl;
+        std::cout << color::red << "Failed to update entry. Please try again" << color::reset << std::endl;
         start();
     }
 
-    std::cout << "The entry detail \"" << detailChoice << "\" was successfully changed\n";
+    std::cout << color::green << "The entry detail \"" << detailChoice << "\" was successfully changed\n" << color::reset;
     std::cin.get();
     start();
 }
@@ -269,11 +298,11 @@ void Dashboard::editEntryFromCommand(Entry* selectedEntry) {
     std::getline(std::cin, detailChoice);
 
     if (!actionMenu->handleEditEntryChoice(detailChoice, *selectedEntry)) {
-        std::cout << "Please try again" << std::endl;
+        std::cout << color::red << "Failed to update entry. Please try again" << color::reset << std::endl;
         start();
     }
 
-    std::cout << "The entry detail \"" << detailChoice << "\" was successfully changed\n";
+    std::cout << color::green << "The entry detail \"" << detailChoice << "\" was successfully changed\n" << color::reset;
     std::cin.get();
     start();
 }
@@ -285,7 +314,7 @@ void ActionMenu::addEntry(std::string& nameInput, std::string& doDateInput, std:
 
     bool priority = false;
     bool failure = false;
-
+    std::cout << color::red; // Set color to red since all messages in this function are failures
     if (validate.name(nameInput) == success) {
         if (validate.date(doDateInput) == success) {
             if (validate.priority(priorityInput) == success) {
@@ -315,6 +344,7 @@ void ActionMenu::addEntry(std::string& nameInput, std::string& doDateInput, std:
         EntryManagement entryManagement(newEntry);
         entryManagement.addEntry();
     }
+    std::cout << color::reset; // Reset color
     dashboard->start();
 }
 
@@ -355,11 +385,11 @@ void ActionMenu::removeEntry(std::string& choice) {
     if (entryFound) {
         EntryManagement entryManagement(selectedEntry);
         if (!entryManagement.removeEntry()) {
-            std::cout << "Failed to edit entry. Please try again\n";
+            std::cout << color::red << "Failed to edit entry. Please try again\n" << color::reset;
         }
     }
     else {
-        std::cout << "No entry with the name or prefix \"" << choice << "\" was found. Please try again\n";
+        std::cout << color::red << "No entry with the name or prefix \"" << choice << "\" was found. Please try again\n" << color::reset;
     }
 
     dashboard->start();
@@ -439,7 +469,7 @@ bool ActionMenu::handleEditEntryChoice(std::string& taskChoice, Entry& selectedE
 }
 
 void Dashboard::displayHelp() {
-    std::cout << "Command options\n";
+    std::cout << color::bold_blue << "Command options\n" << color::reset;
     std::cout << " 1. Write the prefix of one of the options on the dashboard. These are prefixed with a letter, starting from the letter \'a\'\n";
     std::cout << " 2. Type in the prefixed integer of a task followed by a relevant action's prefix, to edit that specific entry. (Example 2c to remove task 2)\n";
     std::cout << " 3. To customize your experience, or edit specific options about the application, open the settings menu by typing it's prefixed letter\n";

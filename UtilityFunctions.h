@@ -4,7 +4,14 @@
 #include <algorithm>
 #include <cctype>
 #include <limits>
-#include <Windows.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#elif __linux__ || __APPLE__
+#include <unistd.h>
+#include <limits.h>
+#endif
+
 #undef max
 
 namespace utility {
@@ -31,22 +38,28 @@ namespace utility {
 		}
 
 		inline std::string getBaseDirectory() {
+			std::string fullPath;
+
+#ifdef _WIN32
 			char buffer[MAX_PATH];
 			GetModuleFileNameA(NULL, buffer, MAX_PATH);
-			std::string fullPath(buffer);
-			std::string::size_type pos = fullPath.find_last_of("\\/");
+			fullPath = std::string(buffer);
+#elif __linux__ || __APPLE__
+			char buffer[PATH_MAX];
+			ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
+			if (len != -1) {
+				buffer[len] = '\0';
+				fullPath = std::string(buffer);
+			}
+#endif
 
-			// Remove the last directory (e.g, x64 or debug)
-			fullPath = fullPath.substr(0, pos);
-			pos = fullPath.find_last_of("\\/");
-
-			// Remove the last directory (e.g, debug or PasswordManager)
-			fullPath = fullPath.substr(0, pos);
-			pos = fullPath.find_last_of("\\/");
-
-			// Remove the last directory (e.g, PasswordManager)
-			fullPath = fullPath.substr(0, pos);
-			pos = fullPath.find_last_of("\\/");
+			// Remove the last three directories (specific to your structure)
+			for (int i = 0; i < 3; ++i) {
+				size_t pos = fullPath.find_last_of("/\\");
+				if (pos != std::string::npos) {
+					fullPath = fullPath.substr(0, pos);
+				}
+			}
 
 			return fullPath; // Return the base directory
 		}

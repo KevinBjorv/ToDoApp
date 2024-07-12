@@ -135,6 +135,7 @@
     <ClCompile Include="ToDoApp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Colors.h" />
     <ClInclude Include="Database.h" />
     <ClInclude Include="Entry.h" />
     <ClInclude Include="MenuManager.h" />
