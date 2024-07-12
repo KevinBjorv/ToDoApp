@@ -1,20 +1,3 @@
 [
-    {
-        "doDate": "1212",
-        "isDone": false,
-        "isPriority": "false",
-        "name": "Do something "
-    },
-    {
-        "doDate": "1010",
-        "isDone": false,
-        "isPriority": "false",
-        "name": "Not that important task"
-    },
-    {
-        "doDate": "1010",
-        "isDone": false,
-        "isPriority": "false",
-        "name": "Do something cool"
-    }
+    
 ]
